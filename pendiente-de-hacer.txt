@@ -1,0 +1,19 @@
+necesito que: Imprlementes un carrusel funcional como un componente de react. Bede utilizar el estado del componeten(un ejemplo de esto es useState) para navegar entre al menos 3 imagenes representativas. tambien incluir un boton de anterior y siguiente, que actualicen el estado para cambiar la imagen visible, sin manipular el DOM directamente, es importante que mantegas una estructura semantica en JSX, es decir comprobar el correcto uso etiquetas HTML semanticas(<header>,<nav>,<main>,<section>,<footer>) dentro del retorno render de sus componentes JSX. 
+
+Identificación con IA: Apóyese en herramientas de Inteligencia Artificial para identificar las mejores prácticas sobre cómo estructurar estos elementos en el framework (uso de hooks, props y ciclo de vida de componentes funcionales).
+Componentes Controlados: Debe integrar tres formularios distintos creados como componentes en React, asegurando que cada <label> esté vinculado a su respectivo input mediante el atributo htmlFor:
+Formulario de Inscripción: Captura de datos de nuevos usuarios.
+Formulario de Login: Acceso de usuarios registrados.
+Formulario de Contacto: Réplica del diseño anterior (Nombre, Email, Mensaje).
+Validación y Seguridad: Programe las validaciones utilizando el estado de React para evitar campos vacíos y asegurar formatos de correo correctos. Debe codificar estos componentes aplicando buenas prácticas de desarrollo seguro (por ejemplo, prevención de inyección de código/XSS y sanitización en el cliente) basadas directamente en recomendaciones generadas por herramientas de IA.
+
+Es importante también incluir arriba a la derecha un botón de ACESIBILIDAD, con sus funcione de alto constraste y todo que es usual con las funciones de acesibilidad
+Gestión del Estado: Utilice objetos para representar a los usuarios y arreglos administrados mediante hooks de estado (useState) para almacenar y actualizar la lista de inscritos.
+o	Modularidad y Props: El código no debe tener funciones sueltas que modifiquen el DOM. Todo debe estar organizado en componentes funcionales reutilizables, comunicando datos y manejadores de eventos (ej: handleValidacion, handleCambioImagen) a través de props
+
+en footer tiene que ir
+Seccion:FB50
+nombre alumno: Mathias Ernesto Moreno De Pujadas
+nombre profesor: Víctor Armando Vásquez Muñoz
+asignatura:Programación Front End
+
