@@ -1,19 +1,35 @@
-necesito que: Imprlementes un carrusel funcional como un componente de react. Bede utilizar el estado del componeten(un ejemplo de esto es useState) para navegar entre al menos 3 imagenes representativas. tambien incluir un boton de anterior y siguiente, que actualicen el estado para cambiar la imagen visible, sin manipular el DOM directamente, es importante que mantegas una estructura semantica en JSX, es decir comprobar el correcto uso etiquetas HTML semanticas(<header>,<nav>,<main>,<section>,<footer>) dentro del retorno render de sus componentes JSX. 
-
-Identificación con IA: Apóyese en herramientas de Inteligencia Artificial para identificar las mejores prácticas sobre cómo estructurar estos elementos en el framework (uso de hooks, props y ciclo de vida de componentes funcionales).
-Componentes Controlados: Debe integrar tres formularios distintos creados como componentes en React, asegurando que cada <label> esté vinculado a su respectivo input mediante el atributo htmlFor:
-Formulario de Inscripción: Captura de datos de nuevos usuarios.
-Formulario de Login: Acceso de usuarios registrados.
-Formulario de Contacto: Réplica del diseño anterior (Nombre, Email, Mensaje).
-Validación y Seguridad: Programe las validaciones utilizando el estado de React para evitar campos vacíos y asegurar formatos de correo correctos. Debe codificar estos componentes aplicando buenas prácticas de desarrollo seguro (por ejemplo, prevención de inyección de código/XSS y sanitización en el cliente) basadas directamente en recomendaciones generadas por herramientas de IA.
-
-Es importante también incluir arriba a la derecha un botón de ACESIBILIDAD, con sus funcione de alto constraste y todo que es usual con las funciones de acesibilidad
-Gestión del Estado: Utilice objetos para representar a los usuarios y arreglos administrados mediante hooks de estado (useState) para almacenar y actualizar la lista de inscritos.
-o	Modularidad y Props: El código no debe tener funciones sueltas que modifiquen el DOM. Todo debe estar organizado en componentes funcionales reutilizables, comunicando datos y manejadores de eventos (ej: handleValidacion, handleCambioImagen) a través de props
-
-en footer tiene que ir
-Seccion:FB50
-nombre alumno: Mathias Ernesto Moreno De Pujadas
-nombre profesor: Víctor Armando Vásquez Muñoz
-asignatura:Programación Front End
-
+Actúa como un desarrollador experto en React. Necesito construir una aplicación estructurada
+en múltiples componentes funcionales y modulares, aplicando las mejores prácticas (uso de
+hooks, props y prevención de XSS). No debe haber manipulación directa del DOM; todo debe
+gestionarse mediante el estado de React.
+1. Estructura Principal y Semántica: El componente principal (App.jsx) debe retornar una
+estructura que utilice estrictamente etiquetas HTML semánticas: <header>, <nav>, <main>,
+<section>, y <footer>.
+2. Accesibilidad: En la parte superior derecha del <header>, incluye un botón de
+"ACCESIBILIDAD" que alterne un estado de "alto contraste" (cambiando clases o estilos
+condicionales en el contenedor principal) y aplique atributos ARIA básicos.
+3. Componente de Carrusel (Carousel.jsx): Implementa un carrusel funcional que renderice
+al menos 3 imágenes representativas.
+● Usa useState para llevar el índice de la imagen actual.
+● Incluye botones de "Anterior" y "Siguiente" que actualicen el estado.
+● La lógica de cambio debe aislarse en funciones manejadoras (ej: handleCambioImagen).
+4. Formularios Controlados y Seguridad: Crea tres componentes de formulario distintos.
+Cada input debe estar vinculado a su estado y su respectivo <label> mediante el atributo
+htmlFor. Aplica validaciones por estado para evitar campos vacíos, verificar el formato de
+correo y realizar una sanitización básica para prevenir XSS.
+● RegistroForm.jsx: Captura de datos de nuevos usuarios.
+● LoginForm.jsx: Acceso de usuarios registrados.
+● ContactoForm.jsx: Campos de Nombre, Email y Mensaje.
+5. Gestión de Estado Global y Props: En el componente padre, utiliza un hook de estado
+(useState) que contenga un arreglo de objetos para almacenar y administrar la "lista de
+inscritos" proveniente del formulario de registro. Pasa los datos y las funciones manejadoras
+(ej: handleValidacion) a los componentes hijos a través de props. Ningún componente hijo debe
+modificar el DOM por su cuenta.
+6. Footer: El <section> del <footer> debe contener exactamente la siguiente información,
+renderizada tal cual:
+● Seccion: FB50
+● nombre alumno: Mathias Ernesto Moreno De Pujadas
+● nombre profesor: Víctor Armando Vásquez Muñoz
+● asignatura: Programación Front End
+Genera primero la estructura del componente App.jsx y luego el código de cada uno de los
+componentes mencionados.
