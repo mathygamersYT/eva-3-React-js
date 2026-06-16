@@ -1,164 +1,239 @@
-import { useState, useEffect } from 'react'
-import { cargarUsuarios } from './utils/usuarios.js'
-import Carrusel from './components/Carrusel.jsx'
-import PopupLogin from './components/PopupLogin.jsx'
-import PopupRegistro from './components/PopupRegistro.jsx'
-import Servicios from './components/Servicios.jsx'
-import TablaUtilidades from './components/TablaUtilidades.jsx'
-import SobreNosotros from './components/SobreNosotros.jsx'
-import Contacto from './components/Contacto.jsx'
+import { useState } from 'react'
+import { validarCampos } from './utils/sanitizar.js'
+import Carousel from './components/Carousel.jsx'
+import RegistroForm from './components/RegistroForm.jsx'
+import LoginForm from './components/LoginForm.jsx'
+import ContactoForm from './components/ContactoForm.jsx'
+
+// ============================================================
+// App.jsx — Componente principal
+// Estructura semántica: <header>, <nav>, <main>, <section>, <footer>
+// Estado global: arreglo de inscritos gestionado con useState
+// handleValidacion se pasa a los hijos vía props
+// Ningún componente hijo modifica el DOM por su cuenta
+// ============================================================
 
 export default function App() {
-  const [loginAbierto, setLoginAbierto] = useState(false)
-  const [registroAbierto, setRegistroAbierto] = useState(false)
-  const [menuAbierto, setMenuAbierto] = useState(false)
-  const [usuarios, setUsuarios] = useState([])
+  // Estado global: "lista de inscritos" proveniente del formulario de registro
+  const [inscritos, setInscritos] = useState([])
 
-  // Punto de arranque: cargar usuarios al montar el componente
-  useEffect(() => {
-    cargarUsuarios().then(setUsuarios)
-  }, [])
+  // Estado de accesibilidad: alto contraste
+  const [altoContraste, setAltoContraste] = useState(false)
 
-  // Cierra popups con Escape
-  useEffect(() => {
-    function handleKeyDown(evento) {
-      if (evento.key === 'Escape') {
-        setLoginAbierto(false)
-        setRegistroAbierto(false)
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  // Estado para sección activa en la navegación
+  const [seccionActiva, setSeccionActiva] = useState('inicio')
 
+  // -------------------------------------------------------
+  // handleValidacion: función manejadora pasada a los hijos
+  // Valida campos y devuelve { valido, errores }
+  // -------------------------------------------------------
+  function handleValidacion(campos) {
+    return validarCampos(campos)
+  }
+
+  // -------------------------------------------------------
+  // handleUsuarioRegistrado: agrega usuario a la lista global
+  // Se pasa a RegistroForm vía props
+  // -------------------------------------------------------
   function handleUsuarioRegistrado(nuevoUsuario) {
-    setUsuarios((prev) => [...prev, nuevoUsuario])
+    setInscritos((prev) => [...prev, nuevoUsuario])
+  }
+
+  // -------------------------------------------------------
+  // Alternar alto contraste con atributo ARIA
+  // -------------------------------------------------------
+  function toggleAltoContraste() {
+    setAltoContraste((prev) => !prev)
   }
 
   return (
-    <>
-      {/* Header fijo del sitio: mantiene la identidad IT Progs visible */}
-      <header className="site-header sticky-top">
-        <nav className="navbar navbar-expand-lg navbar-dark" aria-label="Principal">
-          <div className="container">
-            <a className="navbar-brand fw-bold" href="#hero">IT Progs</a>
+    <div
+      className={`app-container${altoContraste ? ' alto-contraste' : ''}`}
+      role="application"
+      aria-label="IT Progs - Aplicación principal"
+    >
+      {/* ===================== HEADER ===================== */}
+      <header className="site-header">
+        <nav className="navbar" aria-label="Navegación principal">
+          <div className="nav-inner">
+            {/* Logo / Marca */}
+            <a className="nav-brand" href="#inicio" onClick={() => setSeccionActiva('inicio')}>
+              IT Progs
+            </a>
 
-            {/* Registro y Login se dejaron como botones directos */}
-            <div className="nav-actions ms-auto order-lg-3">
-              <button
-                className="btn btn-outline-light btn-sm"
-                id="abrirRegistro"
-                type="button"
-                onClick={() => setRegistroAbierto(true)}
-              >
-                Registro
-              </button>
-              <button
-                className="btn btn-accent btn-sm"
-                id="abrirLogin"
-                type="button"
-                onClick={() => setLoginAbierto(true)}
-              >
-                Login
-              </button>
-            </div>
+            {/* Enlaces de navegación */}
+            <ul className="nav-links" role="menubar">
+              <li role="none">
+                <a
+                  className={`nav-link${seccionActiva === 'inicio' ? ' active' : ''}`}
+                  href="#inicio"
+                  role="menuitem"
+                  onClick={() => setSeccionActiva('inicio')}
+                >
+                  Inicio
+                </a>
+              </li>
+              <li role="none">
+                <a
+                  className={`nav-link${seccionActiva === 'registro' ? ' active' : ''}`}
+                  href="#registro"
+                  role="menuitem"
+                  onClick={() => setSeccionActiva('registro')}
+                >
+                  Registro
+                </a>
+              </li>
+              <li role="none">
+                <a
+                  className={`nav-link${seccionActiva === 'login' ? ' active' : ''}`}
+                  href="#login"
+                  role="menuitem"
+                  onClick={() => setSeccionActiva('login')}
+                >
+                  Login
+                </a>
+              </li>
+              <li role="none">
+                <a
+                  className={`nav-link${seccionActiva === 'contact' ? ' active' : ''}`}
+                  href="#contact"
+                  role="menuitem"
+                  onClick={() => setSeccionActiva('contact')}
+                >
+                  Contacto
+                </a>
+              </li>
+            </ul>
 
+            {/* Botón ACCESIBILIDAD — parte superior derecha del header */}
             <button
-              className="navbar-toggler ms-2 order-lg-4"
-              id="menuButton"
+              className={`btn-accesibilidad${altoContraste ? ' activo' : ''}`}
               type="button"
-              aria-controls="mainMenu"
-              aria-expanded={menuAbierto}
-              aria-label="Mostrar menu"
-              onClick={() => setMenuAbierto((prev) => !prev)}
+              id="btnAccesibilidad"
+              onClick={toggleAltoContraste}
+              aria-pressed={altoContraste}
+              aria-label={altoContraste ? 'Desactivar alto contraste' : 'Activar alto contraste'}
+              title="Alternar modo de alto contraste"
             >
-              <span className="navbar-toggler-icon"></span>
+              {altoContraste ? '☀ ACCESIBILIDAD' : '☾ ACCESIBILIDAD'}
             </button>
-
-            <div className={`collapse navbar-collapse${menuAbierto ? ' show' : ''}`} id="mainMenu">
-              <ul className="navbar-nav ms-auto">
-                <li className="nav-item"><a className="nav-link" href="#hero" onClick={() => setMenuAbierto(false)}>Inicio</a></li>
-                <li className="nav-item"><a className="nav-link" href="#features" onClick={() => setMenuAbierto(false)}>Servicios</a></li>
-                <li className="nav-item"><a className="nav-link" href="#links" onClick={() => setMenuAbierto(false)}>Enlaces</a></li>
-                <li className="nav-item"><a className="nav-link" href="#contact" onClick={() => setMenuAbierto(false)}>Contacto</a></li>
-              </ul>
-            </div>
           </div>
         </nav>
       </header>
 
-      {/* Popup de login: fuera del main para funcionar como capa flotante */}
-      <PopupLogin
-        isOpen={loginAbierto}
-        onClose={() => setLoginAbierto(false)}
-        usuarios={usuarios}
-      />
-
-      {/* Popup de registro: envia los datos al servidor local */}
-      <PopupRegistro
-        isOpen={registroAbierto}
-        onClose={() => setRegistroAbierto(false)}
-        usuarios={usuarios}
-        onUsuarioRegistrado={handleUsuarioRegistrado}
-      />
-
+      {/* ===================== MAIN ===================== */}
       <main>
-        {/* Hero principal con carrusel */}
-        <section id="hero" className="hero" tabIndex={-1}>
-          <div className="container">
-            <div className="row align-items-center g-4">
-              <div className="col-lg-6">
-                <p className="small-muted mb-2">Tu puerta de entrada a recursos utiles</p>
-                <h1>Bienvenido a IT Progs</h1>
-                <p className="lead">
-                  Explora nuestras paginas y recursos para desarrollo, soporte, documentacion tecnica
-                  y proyectos de infraestructura moderna.
-                </p>
-                <div className="d-flex flex-wrap gap-2">
-                  <a className="btn btn-accent" href="#links">Ir a enlaces rapidos</a>
-                  <button
-                    className="btn btn-outline-light"
-                    id="abrirRegistroHero"
-                    type="button"
-                    onClick={() => setRegistroAbierto(true)}
-                  >
-                    Crear cuenta
-                  </button>
-                </div>
+        {/* --- Sección Hero con Carrusel --- */}
+        <section id="inicio" className="hero-section" aria-label="Inicio">
+          <div className="section-container hero-grid">
+            <div className="hero-text">
+              <span className="hero-badge">Tu puerta de entrada a recursos útiles</span>
+              <h1>Bienvenido a IT Progs</h1>
+              <p className="hero-description">
+                Explora nuestras páginas y recursos para desarrollo, soporte, documentación técnica
+                y proyectos de infraestructura moderna.
+              </p>
+              <div className="hero-actions">
+                <a className="btn-primary" href="#registro">Crear cuenta</a>
+                <a className="btn-outline" href="#contact">Contacto</a>
               </div>
-              <div className="col-lg-6">
-                {/* Carrusel manual: navegacion controlada por React */}
-                <Carrusel />
+              {/* Indicador de inscritos */}
+              {inscritos.length > 0 && (
+                <p className="inscritos-badge" aria-live="polite">
+                  👥 {inscritos.length} usuario{inscritos.length !== 1 ? 's' : ''} inscrito{inscritos.length !== 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
+            <div className="hero-carousel-wrapper">
+              {/* Componente Carousel recibe solo lo necesario */}
+              <Carousel />
+            </div>
+          </div>
+        </section>
+
+        {/* --- Sección de Formularios --- */}
+        <section id="formularios" className="forms-section" aria-label="Formularios">
+          <div className="section-container">
+            <h2>Formularios</h2>
+            <p className="section-description">Regístrate, inicia sesión o contáctanos.</p>
+
+            <div className="forms-grid">
+              {/* RegistroForm: recibe inscritos, onUsuarioRegistrado y handleValidacion */}
+              <div id="registro">
+                <RegistroForm
+                  inscritos={inscritos}
+                  onUsuarioRegistrado={handleUsuarioRegistrado}
+                  handleValidacion={handleValidacion}
+                />
+              </div>
+
+              {/* LoginForm: recibe inscritos y handleValidacion */}
+              <div id="login">
+                <LoginForm
+                  inscritos={inscritos}
+                  handleValidacion={handleValidacion}
+                />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Servicios originales de IT Progs */}
-        <Servicios />
+        {/* --- Sección de Contacto --- */}
+        <ContactoForm handleValidacion={handleValidacion} />
 
-        {/* Tabla de recursos utiles */}
-        <TablaUtilidades />
-
-        {/* Seccion institucional */}
-        <SobreNosotros />
-
-        {/* Formulario de contacto independiente */}
-        <Contacto />
+        {/* --- Lista de inscritos (visible si hay registros) --- */}
+        {inscritos.length > 0 && (
+          <section id="inscritos" className="inscritos-section" aria-label="Lista de inscritos">
+            <div className="section-container">
+              <h2>Lista de inscritos</h2>
+              <p className="section-description">Usuarios registrados mediante el formulario.</p>
+              <div className="table-responsive">
+                <table className="inscritos-table" aria-label="Tabla de usuarios inscritos">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Nombre</th>
+                      <th scope="col">Email</th>
+                      <th scope="col">Interés</th>
+                      <th scope="col">Fecha</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inscritos.map((usuario, i) => (
+                      <tr key={usuario.id}>
+                        <td>{i + 1}</td>
+                        <td>{usuario.nombre}</td>
+                        <td>{usuario.email}</td>
+                        <td>{usuario.interes}</td>
+                        <td>{usuario.fechaRegistro}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        )}
       </main>
 
+      {/* ===================== FOOTER ===================== */}
       <footer className="site-footer">
-        <div className="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 py-3">
-          <small>© 2026 IT Progs. Todos los derechos reservados.</small>
-          <nav aria-label="Redes sociales">
-            <ul className="footer-nav">
-              <li><a href="https://twitter.com" target="_blank" rel="noopener">Twitter</a></li>
-              <li><a href="https://www.facebook.com" target="_blank" rel="noopener">Facebook</a></li>
-              <li><a href="https://www.linkedin.com" target="_blank" rel="noopener">LinkedIn</a></li>
-            </ul>
-          </nav>
-        </div>
+        <section className="footer-info" aria-label="Información académica">
+          <div className="section-container footer-content">
+            <div className="footer-academic">
+              <ul className="footer-data">
+                <li><strong>Sección:</strong> FB50</li>
+                <li><strong>Nombre alumno:</strong> Mathias Ernesto Moreno De Pujadas</li>
+                <li><strong>Nombre profesor:</strong> Víctor Armando Vásquez Muñoz</li>
+                <li><strong>Asignatura:</strong> Programación Front End</li>
+              </ul>
+            </div>
+            <div className="footer-brand">
+              <p>© 2026 IT Progs. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </section>
       </footer>
-    </>
+    </div>
   )
 }
