@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { BrowserRouter, Routes, Route, Link, NavLink } from 'react-router-dom'
 import { validarCampos } from './utils/sanitizar.js'
 import Carousel from './components/Carousel.jsx'
 import RegistroForm from './components/RegistroForm.jsx'
@@ -6,22 +7,19 @@ import LoginForm from './components/LoginForm.jsx'
 import ContactoForm from './components/ContactoForm.jsx'
 
 // ============================================================
-// App.jsx — Componente principal
+// App.jsx — Componente principal con react-router-dom
 // Estructura semántica: <header>, <nav>, <main>, <section>, <footer>
 // Estado global: arreglo de inscritos gestionado con useState
 // handleValidacion se pasa a los hijos vía props
 // Ningún componente hijo modifica el DOM por su cuenta
 // ============================================================
 
-export default function App() {
+function AppContent() {
   // Estado global: "lista de inscritos" proveniente del formulario de registro
   const [inscritos, setInscritos] = useState([])
 
   // Estado de accesibilidad: alto contraste
   const [altoContraste, setAltoContraste] = useState(false)
-
-  // Estado para sección activa en la navegación
-  const [seccionActiva, setSeccionActiva] = useState('inicio')
 
   // -------------------------------------------------------
   // handleValidacion: función manejadora pasada a los hijos
@@ -57,51 +55,47 @@ export default function App() {
         <nav className="navbar" aria-label="Navegación principal">
           <div className="nav-inner">
             {/* Logo / Marca */}
-            <a className="nav-brand" href="#inicio" onClick={() => setSeccionActiva('inicio')}>
+            <Link className="nav-brand" to="/">
               IT Progs
-            </a>
+            </Link>
 
-            {/* Enlaces de navegación */}
+            {/* Enlaces de navegación usando NavLink */}
             <ul className="nav-links" role="menubar">
               <li role="none">
-                <a
-                  className={`nav-link${seccionActiva === 'inicio' ? ' active' : ''}`}
-                  href="#inicio"
+                <NavLink
+                  className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+                  to="/"
                   role="menuitem"
-                  onClick={() => setSeccionActiva('inicio')}
                 >
                   Inicio
-                </a>
+                </NavLink>
               </li>
               <li role="none">
-                <a
-                  className={`nav-link${seccionActiva === 'registro' ? ' active' : ''}`}
-                  href="#registro"
+                <NavLink
+                  className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+                  to="/registro"
                   role="menuitem"
-                  onClick={() => setSeccionActiva('registro')}
                 >
                   Registro
-                </a>
+                </NavLink>
               </li>
               <li role="none">
-                <a
-                  className={`nav-link${seccionActiva === 'login' ? ' active' : ''}`}
-                  href="#login"
+                <NavLink
+                  className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+                  to="/login"
                   role="menuitem"
-                  onClick={() => setSeccionActiva('login')}
                 >
                   Login
-                </a>
+                </NavLink>
               </li>
               <li role="none">
-                <a
-                  className={`nav-link${seccionActiva === 'contact' ? ' active' : ''}`}
-                  href="#contact"
+                <NavLink
+                  className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+                  to="/contacto"
                   role="menuitem"
-                  onClick={() => setSeccionActiva('contact')}
                 >
                   Contacto
-                </a>
+                </NavLink>
               </li>
             </ul>
 
@@ -121,99 +115,44 @@ export default function App() {
         </nav>
       </header>
 
-      {/* ===================== MAIN ===================== */}
+      {/* ===================== MAIN (Rutas controladas) ===================== */}
       <main>
-        {/* --- Sección Hero con Carrusel --- */}
-        <section id="inicio" className="hero-section" aria-label="Inicio">
-          <div className="section-container hero-grid">
-            <div className="hero-text">
-              <span className="hero-badge">Tu puerta de entrada a recursos útiles</span>
-              <h1>Bienvenido a IT Progs</h1>
-              <p className="hero-description">
-                Explora nuestras páginas y recursos para desarrollo, soporte, documentación técnica
-                y proyectos de infraestructura moderna.
-              </p>
-              <div className="hero-actions">
-                <a className="btn-primary" href="#registro">Crear cuenta</a>
-                <a className="btn-outline" href="#contact">Contacto</a>
-              </div>
-              {/* Indicador de inscritos */}
-              {inscritos.length > 0 && (
-                <p className="inscritos-badge" aria-live="polite">
-                  👥 {inscritos.length} usuario{inscritos.length !== 1 ? 's' : ''} inscrito{inscritos.length !== 1 ? 's' : ''}
-                </p>
-              )}
-            </div>
-            <div className="hero-carousel-wrapper">
-              {/* Componente Carousel recibe solo lo necesario */}
-              <Carousel />
-            </div>
-          </div>
-        </section>
+        <Routes>
+          {/* Ruta Inicio */}
+          <Route
+            path="/"
+            element={<HomeView inscritosCount={inscritos.length} />}
+          />
 
-        {/* --- Sección de Formularios --- */}
-        <section id="formularios" className="forms-section" aria-label="Formularios">
-          <div className="section-container">
-            <h2>Formularios</h2>
-            <p className="section-description">Regístrate, inicia sesión o contáctanos.</p>
+          {/* Ruta Registro + Lista de Inscritos */}
+          <Route
+            path="/registro"
+            element={
+              <RegistroView
+                inscritos={inscritos}
+                onUsuarioRegistrado={handleUsuarioRegistrado}
+                handleValidacion={handleValidacion}
+              />
+            }
+          />
 
-            <div className="forms-grid">
-              {/* RegistroForm: recibe inscritos, onUsuarioRegistrado y handleValidacion */}
-              <div id="registro">
-                <RegistroForm
-                  inscritos={inscritos}
-                  onUsuarioRegistrado={handleUsuarioRegistrado}
-                  handleValidacion={handleValidacion}
-                />
-              </div>
+          {/* Ruta Login */}
+          <Route
+            path="/login"
+            element={
+              <LoginView
+                inscritos={inscritos}
+                handleValidacion={handleValidacion}
+              />
+            }
+          />
 
-              {/* LoginForm: recibe inscritos y handleValidacion */}
-              <div id="login">
-                <LoginForm
-                  inscritos={inscritos}
-                  handleValidacion={handleValidacion}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* --- Sección de Contacto --- */}
-        <ContactoForm handleValidacion={handleValidacion} />
-
-        {/* --- Lista de inscritos (visible si hay registros) --- */}
-        {inscritos.length > 0 && (
-          <section id="inscritos" className="inscritos-section" aria-label="Lista de inscritos">
-            <div className="section-container">
-              <h2>Lista de inscritos</h2>
-              <p className="section-description">Usuarios registrados mediante el formulario.</p>
-              <div className="table-responsive">
-                <table className="inscritos-table" aria-label="Tabla de usuarios inscritos">
-                  <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Nombre</th>
-                      <th scope="col">Email</th>
-                      <th scope="col">Interés</th>
-                      <th scope="col">Fecha</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {inscritos.map((usuario, i) => (
-                      <tr key={usuario.id}>
-                        <td>{i + 1}</td>
-                        <td>{usuario.nombre}</td>
-                        <td>{usuario.email}</td>
-                        <td>{usuario.interes}</td>
-                        <td>{usuario.fechaRegistro}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </section>
-        )}
+          {/* Ruta Contacto */}
+          <Route
+            path="/contacto"
+            element={<ContactoForm handleValidacion={handleValidacion} />}
+          />
+        </Routes>
       </main>
 
       {/* ===================== FOOTER ===================== */}
@@ -235,5 +174,118 @@ export default function App() {
         </section>
       </footer>
     </div>
+  )
+}
+
+// -------------------------------------------------------------
+// Componentes de Vistas para las Rutas
+// -------------------------------------------------------------
+
+function HomeView({ inscritosCount }) {
+  return (
+    <section id="inicio" className="hero-section" aria-label="Inicio">
+      <div className="section-container hero-grid">
+        <div className="hero-text">
+          <span className="hero-badge">Tu puerta de entrada a recursos útiles</span>
+          <h1>Bienvenido a IT Progs</h1>
+          <p className="hero-description">
+            Explora nuestras páginas y recursos para desarrollo, soporte, documentación técnica
+            y proyectos de infraestructura moderna.
+          </p>
+          <div className="hero-actions">
+            <Link className="btn-primary" to="/registro">Crear cuenta</Link>
+            <Link className="btn-outline" to="/contacto">Contacto</Link>
+          </div>
+          {/* Indicador de inscritos */}
+          {inscritosCount > 0 && (
+            <p className="inscritos-badge" aria-live="polite">
+              👥 {inscritosCount} usuario{inscritosCount !== 1 ? 's' : ''} inscrito{inscritosCount !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+        <div className="hero-carousel-wrapper">
+          <Carousel />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function RegistroView({ inscritos, onUsuarioRegistrado, handleValidacion }) {
+  return (
+    <>
+      <section id="formularios" className="forms-section" aria-label="Formularios">
+        <div className="section-container">
+          <h2>Registro</h2>
+          <p className="section-description">Regístrate para inscribirte en la plataforma.</p>
+          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+            <RegistroForm
+              inscritos={inscritos}
+              onUsuarioRegistrado={onUsuarioRegistrado}
+              handleValidacion={handleValidacion}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* --- Lista de inscritos (visible si hay registros) --- */}
+      {inscritos.length > 0 && (
+        <section id="inscritos" className="inscritos-section" aria-label="Lista de inscritos">
+          <div className="section-container">
+            <h2>Lista de inscritos</h2>
+            <p className="section-description">Usuarios registrados mediante el formulario.</p>
+            <div className="table-responsive">
+              <table className="inscritos-table" aria-label="Tabla de usuarios inscritos">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Interés</th>
+                    <th scope="col">Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inscritos.map((usuario, i) => (
+                    <tr key={usuario.id}>
+                      <td>{i + 1}</td>
+                      <td>{usuario.nombre}</td>
+                      <td>{usuario.email}</td>
+                      <td>{usuario.interes}</td>
+                      <td>{usuario.fechaRegistro}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      )}
+    </>
+  )
+}
+
+function LoginView({ inscritos, handleValidacion }) {
+  return (
+    <section id="formularios" className="forms-section" aria-label="Formularios">
+      <div className="section-container">
+        <h2>Acceso</h2>
+        <p className="section-description">Inicia sesión con tus credenciales.</p>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <LoginForm
+            inscritos={inscritos}
+            handleValidacion={handleValidacion}
+          />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   )
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // ============================================================
 // Carousel.jsx — Carrusel funcional controlado por estado React
@@ -30,6 +30,14 @@ const imagenesCarrusel = [
 export default function Carousel() {
   // useState para llevar el índice de la imagen actual
   const [indice, setIndice] = useState(0)
+
+  // Reproducción automática del carrusel cada 5 segundos
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      handleCambioImagen(1)
+    }, 5000)
+    return () => clearInterval(intervalo)
+  }, [indice])
 
   // Función manejadora aislada: handleCambioImagen
   // Recibe una dirección (-1 para anterior, +1 para siguiente)
