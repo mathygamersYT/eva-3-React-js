@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { validarCampos, limpiarTexto } from '../utils/sanitizar.js'
 
 // ============================================================
@@ -9,13 +9,33 @@ import { validarCampos, limpiarTexto } from '../utils/sanitizar.js'
 // Recibe handleValidacion y onUsuarioRegistrado vía props.
 // ============================================================
 
-export default function RegistroForm({ inscritos, onUsuarioRegistrado, handleValidacion }) {
+export default function RegistroForm({
+  inscritos,
+  onUsuarioRegistrado,
+  onUsuarioActualizado,
+  handleValidacion,
+  initialValues = null,
+  isEdit = false,
+  usuarioId = null,
+  onCancel,
+  notify,
+}) {
+  const valoresIniciales = initialValues || {}
+
   // Estado controlado para cada campo del formulario
-  const [nombre, setNombre] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [interes, setInteres] = useState('')
+  const [nombre, setNombre] = useState(valoresIniciales.nombre || '')
+  const [email, setEmail] = useState(valoresIniciales.email || '')
+  const [password, setPassword] = useState(valoresIniciales.password || '')
+  const [interes, setInteres] = useState(valoresIniciales.interes || '')
   const [mensaje, setMensaje] = useState({ texto: '', tipo: '' })
+
+  useEffect(() => {
+    setNombre(valoresIniciales.nombre || '')
+    setEmail(valoresIniciales.email || '')
+    setPassword(valoresIniciales.password || '')
+    setInteres(valoresIniciales.interes || '')
+    setMensaje({ texto: '', tipo: '' })
+  }, [initialValues])
 
   function procesarRegistro(evento) {
     evento.preventDefault()
@@ -38,24 +58,52 @@ export default function RegistroForm({ inscritos, onUsuarioRegistrado, handleVal
 
     // Sanitizar antes de almacenar
     const emailLimpio = limpiarTexto(email).toLowerCase()
-    const existeUsuario = inscritos.some((u) => u.email === emailLimpio)
+    const isEditMode = Boolean(isEdit && usuarioId && onUsuarioActualizado)
+    const existeUsuario = inscritos.some(
+      (u) => u.email === emailLimpio && (!isEditMode || u.id !== usuarioId)
+    )
 
     if (existeUsuario) {
       setMensaje({ texto: 'Este correo ya está inscrito.', tipo: 'error' })
       return
     }
 
-    const nuevoUsuario = {
-      id: Date.now(),
+    const datosUsuario = {
       nombre: limpiarTexto(nombre),
       email: emailLimpio,
       password: password.trim(),
       interes: limpiarTexto(interes),
+      role: 'usuario',
+    }
+
+    if (isEditMode) {
+      onUsuarioActualizado(usuarioId, datosUsuario)
+      setMensaje({ texto: '¡Inscrito actualizado correctamente!', tipo: 'success' })
+      if (typeof notify === 'function') {
+        notify({
+          title: 'Usuario actualizado',
+          description: 'Los datos del usuario se guardaron correctamente.',
+          state: 'success',
+        })
+      }
+      return
+    }
+
+    const nuevoUsuario = {
+      id: Date.now(),
+      ...datosUsuario,
       fechaRegistro: new Date().toLocaleString('es-CL'),
     }
 
     // Comunicar al padre mediante la prop callback
     onUsuarioRegistrado(nuevoUsuario)
+    if (typeof notify === 'function') {
+      notify({
+        title: 'Registro exitoso',
+        description: 'Tu cuenta fue creada correctamente.',
+        state: 'success',
+      })
+    }
 
     // Limpiar formulario vía estado (sin manipular el DOM)
     setNombre('')
@@ -131,7 +179,19 @@ export default function RegistroForm({ inscritos, onUsuarioRegistrado, handleVal
           </select>
         </div>
 
-        <button className="btn-submit" type="submit" id="btnRegistro">Crear usuario</button>
+        <button className="btn-submit" type="submit" id="btnRegistro">
+          {isEdit ? 'Actualizar usuario' : 'Crear usuario'}
+        </button>
+
+        {isEdit && onCancel && (
+          <button
+            type="button"
+            className="btn-secondary btn-small"
+            onClick={onCancel}
+          >
+            Cancelar
+          </button>
+        )}
 
         {mensaje.texto && (
           <div

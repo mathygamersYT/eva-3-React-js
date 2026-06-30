@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import { limpiarTexto } from '../utils/sanitizar.js'
 
+const ADMIN_USER = {
+  nombre: 'Administrador',
+  email: 'admin@itprogs.com',
+  password: 'Admin123!',
+  role: 'admin',
+}
+
 // ============================================================
 // LoginForm.jsx — Formulario controlado de acceso de usuarios
 // Cada input está vinculado a su estado (formulario controlado).
@@ -9,7 +16,7 @@ import { limpiarTexto } from '../utils/sanitizar.js'
 // Recibe handleValidacion e inscritos vía props.
 // ============================================================
 
-export default function LoginForm({ inscritos, handleValidacion }) {
+export default function LoginForm({ inscritos, handleValidacion, onLogin, notify }) {
   // Estado controlado para cada campo
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -30,12 +37,32 @@ export default function LoginForm({ inscritos, handleValidacion }) {
     if (!resultado.valido) {
       setMensaje({ texto: resultado.errores.join(' '), tipo: 'error' })
       setSalidaLogin('Salida: credenciales rechazadas por validación.')
+      if (typeof notify === 'function') {
+        notify({
+          title: 'Error de validación',
+          description: resultado.errores.join(' '),
+          state: 'error',
+        })
+      }
       return
     }
 
     // Sanitizar y buscar en la lista de inscritos
     const emailLimpio = limpiarTexto(email).toLowerCase()
     const passwordLimpio = password.trim()
+
+    if (emailLimpio === ADMIN_USER.email && passwordLimpio === ADMIN_USER.password) {
+      const { password: _, ...datosPublicos } = ADMIN_USER
+      if (typeof onLogin === 'function') {
+        onLogin(datosPublicos)
+      }
+      setEmail('')
+      setPassword('')
+      setMensaje({ texto: `Bienvenido/a, ${ADMIN_USER.nombre}.`, tipo: 'success' })
+      setSalidaLogin('Salida: administrador autenticado.')
+      return
+    }
+
     const usuario = inscritos.find(
       (item) => item.email === emailLimpio && item.password === passwordLimpio
     )
@@ -43,11 +70,23 @@ export default function LoginForm({ inscritos, handleValidacion }) {
     if (!usuario) {
       setMensaje({ texto: 'Credenciales incorrectas o usuario no registrado.', tipo: 'error' })
       setSalidaLogin('Salida: no existe una coincidencia en la lista de inscritos.')
+      if (typeof notify === 'function') {
+        notify({
+          title: 'Falló el login',
+          description: 'Usuario o contraseña incorrectos.',
+          state: 'error',
+        })
+      }
       return
     }
 
     // Excluir contraseña de la salida por seguridad
     const { password: _, ...datosPublicos } = usuario
+
+    // Comunicar al padre que el usuario ha iniciado sesión
+    if (typeof onLogin === 'function') {
+      onLogin(datosPublicos)
+    }
 
     // Limpiar formulario vía estado
     setEmail('')

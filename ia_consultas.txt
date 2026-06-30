@@ -1,3 +1,7 @@
 A)Genera una estructura modular en React/Next.js con componentes funcionales (Header, Footer, Carousel, RegistroForm, LoginForm, ContactoForm) usando hooks y Next.js App Router. El Header debe incluir navegación semántica y accesibilidad (modo alto contraste). Usa un estado global o Context para la lista de inscritos sin manipular directamente el DOM
 
 B)Crea una función utilitaria en JavaScript para validar y sanitizar inputs de formulario. Debe evitar campos vacíos, validar el formato de email con una regex segura y limpiar/escapar caracteres especiales (<, >, &, etc.) para prevenir ataques de inyección XSS en React
+
+C)Diseña un hook genérico de React llamado useLocalStorage que permita leer datos desde localStorage al montar y escribir cada vez que cambie el estado. El hook debe aceptar una clave y un valor inicial, manejar JSON y errores de almacenamiento.
+
+D)Revisa un componente de React que consume una API externa con fetch y agrega manejo de estados de carga y error junto con un reintento amigable para el usuario.

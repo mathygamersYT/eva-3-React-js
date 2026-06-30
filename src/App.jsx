@@ -1,11 +1,15 @@
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Link, NavLink } from 'react-router-dom'
 import { validarCampos } from './utils/sanitizar.js'
+import { Toaster, sileo } from 'sileo'
 import Carousel from './components/Carousel.jsx'
 import RegistroForm from './components/RegistroForm.jsx'
+import EditarRegistroForm from './components/EditarRegistroForm.jsx'
 import LoginForm from './components/LoginForm.jsx'
 import ContactoForm from './components/ContactoForm.jsx'
 import RecursosView from './components/RecursosView.jsx'
+import AdminView from './components/AdminView.jsx'
+import useLocalStorage from './hooks/useLocalStorage.js'
 
 // ============================================================
 // App.jsx — Componente principal con react-router-dom
@@ -25,10 +29,30 @@ function handleValidacion(campos) {
 
 function AppContent() {
   // Estado global: "lista de inscritos" proveniente del formulario de registro
-  const [inscritos, setInscritos] = useState([])
+  const [inscritos, setInscritos] = useLocalStorage('inscritos', [])
+  const [usuarioActivo, setUsuarioActivo] = useLocalStorage('usuarioActivo', null)
+  const [usuarioEnEdicion, setUsuarioEnEdicion] = useState(null)
 
   // Estado de accesibilidad: alto contraste
   const [altoContraste, setAltoContraste] = useState(false)
+
+  function notify({ title, description, state = 'success' }) {
+    try {
+      if (sileo && typeof sileo[state] === 'function') {
+        sileo[state]({ title, description })
+        return
+      }
+
+      if (sileo && typeof sileo.show === 'function') {
+        sileo.show({ title, description, state })
+        return
+      }
+    } catch (error) {
+      console.warn('Error mostrando toast con Sileo:', error)
+    }
+
+    window.alert(`${title}\n${description}`)
+  }
 
   // -------------------------------------------------------
   // handleUsuarioRegistrado: agrega usuario a la lista global
@@ -36,6 +60,71 @@ function AppContent() {
   // -------------------------------------------------------
   function handleUsuarioRegistrado(nuevoUsuario) {
     setInscritos((prev) => [...prev, nuevoUsuario])
+    notify({
+      title: 'Registro exitoso',
+      description: 'El usuario fue añadido y guardado en localStorage.',
+      state: 'success',
+    })
+  }
+
+  function handleActualizarInscrito(id, datosActualizados) {
+    setInscritos((prev) =>
+      prev.map((usuario) =>
+        usuario.id === id ? { ...usuario, ...datosActualizados } : usuario
+      )
+    )
+    setUsuarioEnEdicion(null)
+    notify({
+      title: 'Inscrito actualizado',
+      description: 'Los cambios se guardaron correctamente.',
+      state: 'success',
+    })
+  }
+
+  function handleEliminarInscrito(id) {
+    const confirmar = window.confirm('¿Estás seguro de que deseas eliminar este inscrito?')
+    if (!confirmar) return
+
+    setInscritos((prev) => prev.filter((usuario) => usuario.id !== id))
+
+    if (usuarioEnEdicion?.id === id) {
+      setUsuarioEnEdicion(null)
+    }
+
+    notify({
+      title: 'Usuario eliminado',
+      description: 'El inscrito fue removido correctamente.',
+      state: 'warning',
+    })
+  }
+
+  function handleEditarSeleccionado(id) {
+    const usuario = inscritos.find((item) => item.id === id)
+    if (usuario) {
+      setUsuarioEnEdicion(usuario)
+    }
+  }
+
+  function handleCancelarEdicion() {
+    setUsuarioEnEdicion(null)
+  }
+
+  function handleInicioSesion(usuario) {
+    setUsuarioActivo(usuario)
+    notify({
+      title: 'Inicio de sesión correcto',
+      description: `Bienvenido/a ${usuario.nombre}.`,
+      state: 'success',
+    })
+  }
+
+  function handleCerrarSesion() {
+    setUsuarioActivo(null)
+    notify({
+      title: 'Sesión cerrada',
+      description: 'Has salido de tu cuenta exitosamente.',
+      state: 'info',
+    })
   }
 
   // -------------------------------------------------------
@@ -89,6 +178,17 @@ function AppContent() {
                   Login
                 </NavLink>
               </li>
+              {usuarioActivo?.role === 'admin' && (
+                <li role="none">
+                  <NavLink
+                    className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+                    to="/admin"
+                    role="menuitem"
+                  >
+                    Admin
+                  </NavLink>
+                </li>
+              )}
               <li role="none">
                 <NavLink
                   className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
@@ -109,6 +209,19 @@ function AppContent() {
               </li>
             </ul>
 
+            {usuarioActivo && (
+              <div className="nav-user-info" aria-label="Usuario autenticado">
+                <span className="nav-user-greeting">Hola, {usuarioActivo.nombre}</span>
+                <button
+                  type="button"
+                  className="btn-outline btn-small"
+                  onClick={handleCerrarSesion}
+                  aria-label="Cerrar sesión"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            )}
             {/* Botón ACCESIBILIDAD — parte superior derecha del header */}
             <button
               className={`btn-accesibilidad${altoContraste ? ' activo' : ''}`}
@@ -140,8 +253,15 @@ function AppContent() {
             element={
               <RegistroView
                 inscritos={inscritos}
+                usuarioActivo={usuarioActivo}
                 onUsuarioRegistrado={handleUsuarioRegistrado}
+                onActualizarInscrito={handleActualizarInscrito}
+                onEliminarInscrito={handleEliminarInscrito}
+                onEditarSeleccionado={handleEditarSeleccionado}
+                usuarioEnEdicion={usuarioEnEdicion}
+                onCancelarEdicion={handleCancelarEdicion}
                 handleValidacion={handleValidacion}
+                notify={notify}
               />
             }
           />
@@ -152,7 +272,11 @@ function AppContent() {
             element={
               <LoginView
                 inscritos={inscritos}
+                usuarioActivo={usuarioActivo}
+                onLogin={handleInicioSesion}
+                onLogout={handleCerrarSesion}
                 handleValidacion={handleValidacion}
+                notify={notify}
               />
             }
           />
@@ -160,7 +284,7 @@ function AppContent() {
           {/* Ruta Contacto */}
           <Route
             path="/contacto"
-            element={<ContactoForm handleValidacion={handleValidacion} />}
+            element={<ContactoForm handleValidacion={handleValidacion} notify={notify} />}
           />
 
           {/* Ruta Recursos — API Dev.to */}
@@ -168,8 +292,21 @@ function AppContent() {
             path="/recursos"
             element={<RecursosView />}
           />
+          <Route
+            path="/admin"
+            element={
+              <AdminView
+                usuarioActivo={usuarioActivo}
+                inscritos={inscritos}
+                onEditarSeleccionado={handleEditarSeleccionado}
+                onEliminarInscrito={handleEliminarInscrito}
+              />
+            }
+          />
         </Routes>
       </main>
+
+      <Toaster position="top-right" theme="dark" />
 
       {/* ===================== FOOTER ===================== */}
       <footer className="site-footer">
@@ -217,7 +354,7 @@ function HomeView({ inscritosCount }) {
             <p className="inscritos-badge" aria-live="polite">
               👥 {inscritosCount} usuario{inscritosCount !== 1 ? 's' : ''} inscrito{inscritosCount !== 1 ? 's' : ''}
             </p>
-          )}
+          )}  
         </div>
         <div className="hero-carousel-wrapper">
           <Carousel />
@@ -227,7 +364,18 @@ function HomeView({ inscritosCount }) {
   )
 }
 
-function RegistroView({ inscritos, onUsuarioRegistrado, handleValidacion }) {
+function RegistroView({
+  inscritos,
+  usuarioActivo,
+  onUsuarioRegistrado,
+  onActualizarInscrito,
+  onEliminarInscrito,
+  onEditarSeleccionado,
+  usuarioEnEdicion,
+  onCancelarEdicion,
+  handleValidacion,
+  notify,
+}) {
   return (
     <>
       <section id="formularios" className="forms-section" aria-label="Formularios">
@@ -239,13 +387,34 @@ function RegistroView({ inscritos, onUsuarioRegistrado, handleValidacion }) {
               inscritos={inscritos}
               onUsuarioRegistrado={onUsuarioRegistrado}
               handleValidacion={handleValidacion}
+              notify={notify}
             />
           </div>
         </div>
       </section>
 
+      {usuarioEnEdicion && (
+        <section className="forms-section" aria-label="Editar inscrito">
+          <div className="section-container">
+            <h2>Editar inscrito</h2>
+            <p className="section-description">Actualiza los datos del usuario seleccionado.</p>
+            <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+              <EditarRegistroForm
+                inscritos={inscritos}
+                usuarioId={usuarioEnEdicion.id}
+                initialValues={usuarioEnEdicion}
+                onUsuarioActualizado={onActualizarInscrito}
+                onCancel={onCancelarEdicion}
+                handleValidacion={handleValidacion}
+                notify={notify}
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* --- Lista de inscritos (visible si hay registros) --- */}
-      {inscritos.length > 0 && (
+      {usuarioActivo?.role === 'admin' && inscritos.length > 0 && (
         <section id="inscritos" className="inscritos-section" aria-label="Lista de inscritos">
           <div className="section-container">
             <h2>Lista de inscritos</h2>
@@ -259,6 +428,7 @@ function RegistroView({ inscritos, onUsuarioRegistrado, handleValidacion }) {
                     <th scope="col">Email</th>
                     <th scope="col">Interés</th>
                     <th scope="col">Fecha</th>
+                <th scope="col">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -269,6 +439,24 @@ function RegistroView({ inscritos, onUsuarioRegistrado, handleValidacion }) {
                       <td>{usuario.email}</td>
                       <td>{usuario.interes}</td>
                       <td>{usuario.fechaRegistro}</td>
+                      <td className="inscritos-actions-cell">
+                        <button
+                          type="button"
+                          className="btn-outline btn-small"
+                          onClick={() => onEditarSeleccionado(usuario.id)}
+                          aria-label={`Editar registro de ${usuario.nombre}`}
+                        >
+                          Editar
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-danger btn-small"
+                          onClick={() => onEliminarInscrito(usuario.id)}
+                          aria-label={`Eliminar registro de ${usuario.nombre}`}
+                        >
+                          Eliminar
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -281,17 +469,35 @@ function RegistroView({ inscritos, onUsuarioRegistrado, handleValidacion }) {
   )
 }
 
-function LoginView({ inscritos, handleValidacion }) {
+function LoginView({ inscritos, usuarioActivo, onLogin, onLogout, handleValidacion, notify }) {
   return (
     <section id="formularios" className="forms-section" aria-label="Formularios">
       <div className="section-container">
         <h2>Acceso</h2>
         <p className="section-description">Inicia sesión con tus credenciales.</p>
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <LoginForm
-            inscritos={inscritos}
-            handleValidacion={handleValidacion}
-          />
+          {usuarioActivo ? (
+            <div className="login-status" aria-live="polite">
+              <p className="section-description">
+                Has iniciado sesión como <strong>{usuarioActivo.nombre}</strong>.
+                {usuarioActivo.role === 'admin' && ' Estás en modo administrador.'}
+              </p>
+              <button
+                type="button"
+                className="btn-outline btn-small"
+                onClick={onLogout}
+              >
+                Cerrar sesión
+              </button>
+            </div>
+          ) : (
+            <LoginForm
+              inscritos={inscritos}
+              handleValidacion={handleValidacion}
+              onLogin={onLogin}
+              notify={notify}
+            />
+          )}
         </div>
       </div>
     </section>

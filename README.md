@@ -1,16 +1,78 @@
-# React + Vite
+# IT Progs - Evaluación React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Esta aplicación es una SPA creada con React 19 y Vite 8, que incluye:
 
-Currently, two official plugins are available:
+- Registro de usuarios con validación y sanitización de inputs.
+- Login con sesión persistente en `localStorage`.
+- Logout y control de usuario activo.
+- Panel de administración para gestionar usuarios inscritos.
+- Consumo de API pública Dev.to con estado de carga y manejo de errores.
+- Toasts de notificación con `sileo` para eventos importantes.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Datos de administrador
 
-## React Compiler
+Para acceder al panel administrativo, utiliza:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Email: `admin@itprogs.com`
+- Contraseña: `Admin123!`
 
-## Expanding the ESLint configuration
+El admin puede:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Ver la lista completa de inscritos.
+- Editar los datos de cualquier usuario.
+- Eliminar usuarios registrados.
+
+## Requisitos de uso
+
+1. Instala dependencias:
+
+```bash
+npm install
+```
+
+2. Inicia la aplicación en modo desarrollo:
+
+```bash
+npm run dev
+```
+
+3. Abre la URL que muestre Vite, normalmente `http://localhost:5173`.
+
+## Documentación de funcionalidades
+
+### Registro
+
+- El formulario de registro valida campos vacíos, email y contraseña.
+- Se sanitizan los valores para evitar inyección XSS.
+- El usuario creado se persiste en `localStorage`.
+
+### Login / Logout
+
+- El login valida el usuario contra los inscritos.
+- El admin está disponible con credenciales fijas.
+- Al cerrar sesión se limpia el estado de usuario activo.
+
+### Administración
+
+- La ruta `/admin` está protegida para usuarios con rol `admin`.
+- El menú muestra el enlace `Admin` solo cuando el admin está autenticado.
+- La lista de inscritos en la ruta de registro se muestra solo al admin.
+
+### Notificaciones
+
+- La app utiliza `sileo` para mostrar toasts en eventos clave.
+- Se notifica registro exitoso, actualización, eliminación, login y logout.
+
+## Dependencias principales
+
+- `react` ^19.2.6
+- `react-dom` ^19.2.6
+- `react-router-dom` ^7.18.0
+- `vite` ^8.0.12
+- `sileo` ^0.1.5
+
+## Notas adicionales
+
+- El proyecto incluye validación centralizada en `src/utils/sanitizar.js`.
+- El estado de inscritos y la sesión de usuario se guardan en `localStorage` con el hook personalizado `src/hooks/useLocalStorage.js`.
+- La app está preparada para producción mediante `npm run build`.

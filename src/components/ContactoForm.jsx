@@ -10,7 +10,7 @@ import { limpiarTexto } from '../utils/sanitizar.js'
 // Recibe handleValidacion vía props desde el componente padre.
 // ============================================================
 
-export default function ContactoForm({ handleValidacion }) {
+export default function ContactoForm({ handleValidacion, notify }) {
   // Estado controlado para cada campo
   const [nombre, setNombre] = useState('')
   const [email, setEmail] = useState('')
@@ -49,6 +49,14 @@ export default function ContactoForm({ handleValidacion }) {
     setEmail('')
     setMensajeTexto('')
     setFeedback({ texto: 'Mensaje enviado. Te contactaremos para revisar tu solicitud.', tipo: 'success' })
+
+    if (typeof notify === 'function') {
+      notify({
+        title: 'Mensaje enviado',
+        description: 'Tu mensaje de contacto fue enviado correctamente.',
+        state: 'success',
+      })
+    }
   }
 
   return (
