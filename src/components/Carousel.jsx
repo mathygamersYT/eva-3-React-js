@@ -54,11 +54,10 @@ export default function Carousel() {
   const imagen = imagenesCarrusel[indice]
 
   return (
-    <div
+    <section
       className="carousel-container"
       aria-roledescription="carrusel"
       aria-label="Galería de hardware"
-      role="region"
     >
       {/* Imagen actual del carrusel */}
       <div className="carousel-viewport">
@@ -96,9 +95,9 @@ export default function Carousel() {
       {/* Indicadores de punto y contador */}
       <div className="carousel-indicators">
         <div className="carousel-dots" aria-label="Indicadores del carrusel">
-          {imagenesCarrusel.map((_, i) => (
+          {imagenesCarrusel.map((imagen, i) => (
             <button
-              key={i}
+              key={imagen.titulo}
               className={`carousel-dot${i === indice ? ' active' : ''}`}
               type="button"
               aria-label={`Ir a imagen ${i + 1}`}
@@ -111,6 +110,6 @@ export default function Carousel() {
           {indice + 1} / {imagenesCarrusel.length}
         </span>
       </div>
-    </div>
+    </section>
   )
 }

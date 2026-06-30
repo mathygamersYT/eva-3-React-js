@@ -5,6 +5,7 @@ import Carousel from './components/Carousel.jsx'
 import RegistroForm from './components/RegistroForm.jsx'
 import LoginForm from './components/LoginForm.jsx'
 import ContactoForm from './components/ContactoForm.jsx'
+import RecursosView from './components/RecursosView.jsx'
 
 // ============================================================
 // App.jsx — Componente principal con react-router-dom
@@ -14,20 +15,20 @@ import ContactoForm from './components/ContactoForm.jsx'
 // Ningún componente hijo modifica el DOM por su cuenta
 // ============================================================
 
+// -------------------------------------------------------
+// handleValidacion: función pura en módulo — no usa estado ni refs,
+// se eleva fuera del componente para evitar recrearse en cada render.
+// -------------------------------------------------------
+function handleValidacion(campos) {
+  return validarCampos(campos)
+}
+
 function AppContent() {
   // Estado global: "lista de inscritos" proveniente del formulario de registro
   const [inscritos, setInscritos] = useState([])
 
   // Estado de accesibilidad: alto contraste
   const [altoContraste, setAltoContraste] = useState(false)
-
-  // -------------------------------------------------------
-  // handleValidacion: función manejadora pasada a los hijos
-  // Valida campos y devuelve { valido, errores }
-  // -------------------------------------------------------
-  function handleValidacion(campos) {
-    return validarCampos(campos)
-  }
 
   // -------------------------------------------------------
   // handleUsuarioRegistrado: agrega usuario a la lista global
@@ -97,6 +98,15 @@ function AppContent() {
                   Contacto
                 </NavLink>
               </li>
+              <li role="none">
+                <NavLink
+                  className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+                  to="/recursos"
+                  role="menuitem"
+                >
+                  Recursos
+                </NavLink>
+              </li>
             </ul>
 
             {/* Botón ACCESIBILIDAD — parte superior derecha del header */}
@@ -151,6 +161,12 @@ function AppContent() {
           <Route
             path="/contacto"
             element={<ContactoForm handleValidacion={handleValidacion} />}
+          />
+
+          {/* Ruta Recursos — API Dev.to */}
+          <Route
+            path="/recursos"
+            element={<RecursosView />}
           />
         </Routes>
       </main>
